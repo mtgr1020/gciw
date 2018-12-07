@@ -13,11 +13,8 @@
     "build": "node build/build.js"
   },
   "dependencies": {
-    "axios": "^0.18.0",
-    "echarts": "^4.2.0-rc.2",
-    "element-ui": "^2.4.9",
+    "flickity": "^2.1.2",
     "heatmap.js": "^2.0.5",
-    "moment": "^2.22.2",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
   },

@@ -14,15 +14,26 @@
     <section>
       <el-row type="flex" justify="space-around">
         <el-col :span="4">
-          <img :src="imgBase64" style="width: 90%;padding: 10px;"/>
+          <div>
+            <p style="margin-top: 20px;color: white;word-break: break-word;">
+              热力图数据处理:<br/>&nbsp&nbsp
+              1.数据拿到(区域+人坐标)，如果是相对于区域的坐标进行换算，例配置区域1坐标为（200，100），那这个区域对应点就是（（200+x），（100-y）），赋值坐标位置；<br/>&nbsp&nbsp
+              2.根据区域进行数值排序，分级设置每个区域对应的value值，以便后期进行绘色，对于颜色区间可以固定值也可以动态分级（绝对热度，相对热度）。<br/>&nbsp&nbsp
+              3.数据整合，绘制热度图。
+            </p>
+          </div>
         </el-col>
         <el-col :span="14">
           <div ref="heatmap" class="pg-heatmap" @click="mockAddData"></div>
           <div class="pg-map-config">
             <div>
               <h4>热力图配置</h4>
-              <el-button type="primary" plain size="mini" style="float: right;margin-left: 10px;" @click="configureMap">重新生成</el-button>
-              <el-button type="primary" plain size="mini" style="float: right" @click="pauseMap">{{ pauseFalg?'暂停...':'暂停' }}</el-button>
+              <el-button type="primary" plain size="mini" style="float: right;margin-left: 10px;" @click="configureMap">
+                重新生成
+              </el-button>
+              <el-button type="primary" plain size="mini" style="float: right" @click="pauseMap">{{
+                pauseFalg?'暂停...':'暂停' }}
+              </el-button>
               <el-button type="primary" plain size="mini" style="float: right" @click="repaintMap">重置画布</el-button>
               <el-button type="primary" plain size="mini" style="float: right" @click="getMapImg">截取热力图</el-button>
               <el-button type="primary" plain size="mini" style="float: right" @click="addDataFlag = !addDataFlag">
@@ -76,9 +87,36 @@
           </div>
         </el-col>
         <el-col :span="6">
-          <div ref="curveChart" class="pg-curveChart">
-
+          <div ref="curveChart" class="pg-curveChart"></div>
+          <div class="pg-history">
+            <div class="pg-history-title">
+              <h3>展区热度总排名</h3>
+              <span>Show area heat total ranking</span>
+            </div>
+            <div class="pg-history-table">
+              <table>
+                <thead>
+                <tr>
+                  <th>展区</th>
+                  <th>历史总计</th>
+                  <th>今日人数</th>
+                  <th>热度</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr v-for="item in historyRank" :key="item.name">
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.total }}</td>
+                  <td>{{ item.today }}</td>
+                  <td>
+                    <i class="fa fa-star" v-for="hotitem in item.hot"></i>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
+          <img :src="imgBase64" style="width: 90%;padding: 10px;"/>
         </el-col>
       </el-row>
     </section>
@@ -90,8 +128,6 @@
 
 <script>
   import h337 from 'heatmap.js'
-  import moment from 'moment'
-  import echarts from 'echarts'
 
   export default {
     data() {
@@ -105,8 +141,8 @@
           blur: .75,
           gradient: {
             '.5': 'rgba(30, 144, 255, 1)',
-            '.8': 'rgba(247, 4, 4, 1)',
-            '.95': '#fff'
+            '.8': 'rgba(250, 212, 0, 1)',
+            '.95': 'rgba(255, 69, 0, 1)'
           }
         },
         timeOut: undefined,
@@ -117,10 +153,10 @@
           },
           {
             value: 80,
-            color: 'rgba(247, 4, 4, 1)'
+            color: 'rgba(250, 212, 0, 1)'
           }, {
             value: 95,
-            color: '#fff'
+            color: 'rgba(255, 69, 0, 1)'
           }
         ],
         predefineColors: [
@@ -142,11 +178,41 @@
         imgBase64: '',
         addDataFlag: false,
         pauseFalg: false,
-        addData:[]
+        addData: [],
+        historyRank:[{
+          name: '5号展厅',
+          total: 2301,
+          today: 348,
+          hot: 5
+        },{
+          name: '12号展厅',
+          total: 2191,
+          today: 301,
+          hot: 5
+        },{
+          name: '1号展厅',
+          total: 1827,
+          today: 390,
+          hot: 4
+        },{
+          name: '8号展厅',
+          total: 1405,
+          today: 532,
+          hot: 4
+        },{
+          name: '2号展厅',
+          total: 1298,
+          today: 234,
+          hot: 3
+        }],
+        counter: 999,
       }
     },
     watch: {},
     mounted() {
+      setInterval(()=>{
+        this.counter = this.counter + Math.floor(Math.random()*10);
+      },2000);
       this.$nextTick(function () {
         this.initMap();
         this.initClock();
@@ -154,43 +220,77 @@
       });
     },
     methods: {
-      initCharts: function(){
+      initCharts: function () {
         const myChart = echarts.init(this.$refs.curveChart);
+
         function randomData() {
           now = new Date(+now + oneDay);
           value = value + Math.random() * 21 - 10;
           return {
             name: now.toString(),
             value: [
-              [now.getFullYear(), now.getMonth() + 1, now.getDate()].join('/'),
+              now.getTime(),
               Math.round(value)
             ]
           }
         }
+        function randomData2() {
+          now = new Date(+now + oneDay);
+          value2 = value2 + Math.random() * 31 - 13;
+          return {
+            name: now.toString(),
+            value: [
+              now.getTime(),
+              Math.round(value2)
+            ]
+          }
+        }
 
-        let data = [];
-        let now = +new Date(1997, 9, 3);
-        let oneDay = 24 * 3600 * 1000;
-        let value = Math.random() * 1000;
-        for (let i = 0; i < 1000; i++) {
-          data.push(randomData());
+        let data1 = [];
+        let data2 = [];
+        let now = +new Date();
+        let oneDay = 1000;
+        let value = Math.random() * 500;
+        let value2 = Math.random() * 200;
+        for (let i = 0; i < 60; i++) {
+          data1.push(randomData());
+          data2.push(randomData2());
         }
 
         let option = {
           title: {
-            text: '动态数据 + 时间坐标轴'
-          },
-          tooltip: {
-            trigger: 'axis',
-            formatter: function (params) {
-              params = params[0];
-              var date = new Date(params.name);
-              return date.getDate() + '/' + (date.getMonth() + 1) + '/' + date.getFullYear() + ' : ' + params.value[1];
+            text: '展区实时热度统计(前三)',
+            subtext: 'Real-time display map (top 3)',
+            textStyle: {
+              color: '#fff'
             },
-            axisPointer: {
-              animation: false
+            subtextStyle: {
+              color: '#fff'
             }
           },
+          legend: {
+            type: 'plain',
+            orient: 'vertical',
+            right: '30',
+            textStyle: {
+              color: '#fff'
+            },
+            data: [
+              '一号展厅',
+              '五号展厅'
+            ]
+          },
+          // tooltip: {
+          //   trigger: 'axis',
+          //   formatter: function (params) {
+          //     params = params[0];
+          //     var date = new Date(params.name);
+          //     return date.getHours() + ':' + date.getMinutes() + ':' + date.getSeconds() + ' : ' + params.value[1];
+          //   },
+          //   axisPointer: {
+          //     animation: false
+          //   }
+          // },
           xAxis: {
             type: 'time',
             splitLine: {
@@ -205,24 +305,37 @@
             }
           },
           series: [{
-            name: '模拟数据',
+            name: '一号展厅',
             type: 'line',
             showSymbol: false,
             hoverAnimation: false,
-            data: data
+            itemStyle: {
+              color: 'blue'
+            },
+            data: data1
+          }, {
+            name: '五号展厅',
+            type: 'line',
+            showSymbol: false,
+            hoverAnimation: false,
+            data: data2
           }]
         };
 
         setInterval(function () {
 
-          for (var i = 0; i < 5; i++) {
-            data.shift();
-            data.push(randomData());
-          }
+          // for (let i = 0; i < 1; i++) {
+          data1.shift();
+          data1.push(randomData());
+          data2.shift();
+          data2.push(randomData2());
+          // }
 
           myChart.setOption({
             series: [{
-              data: data
+              data: data1
+            },{
+              data: data2
             }]
           });
         }, 1000);
@@ -278,8 +391,8 @@
             };
             points.push(point);
           }
-          for(let i=0;i<this.addData.length;i++){
-            max = max>this.addData[i].value?max:this.addData[i].value;
+          for (let i = 0; i < this.addData.length; i++) {
+            max = max > this.addData[i].value ? max : this.addData[i].value;
             points.push(this.addData[i]);
           }
           let data = {
@@ -304,17 +417,17 @@
         console.log(this.imgBase64);
       },
       mockAddData: function ($event) {
-        if(this.addDataFlag){
+        if (this.addDataFlag) {
           let ev = $event;
-          if(this.pauseFalg){
-            //下方其实才是真正的添加数据，但是由于我们setData时会抹去这些数据 所以吧数据放在vue中存储起来
+          if (this.pauseFalg) {
+            //下方其实才是真正的添加数据，但是由于我们setData时会抹去这些数据 所以把数据放在vue中存储起来
             this.heatmapInstance.addData({
               x: ev.layerX,
               y: ev.layerY,
               value: Math.floor(Math.random() * 100),
               radius: this.configMap.radius
             });
-          }else{
+          } else {
             this.addData.push({
               x: ev.layerX,
               y: ev.layerY,
@@ -325,6 +438,9 @@
 
         }
       }
+    },
+    components: {
+
     }
   }
 </script>
@@ -332,7 +448,6 @@
 <style lang="scss" scoped>
   .pg-head {
     height: 50px;
-    border-top: solid 2px #023326;
     border-bottom: solid 1px #023326;
     text-align: center;
     .pg-title {
@@ -349,6 +464,7 @@
   .pg-heatmap {
     width: 100%;
     height: 600px;
+    margin-top: 20px;
     /*background-image: url("../assets/img/bg.jpg");*/
   }
 
@@ -367,9 +483,39 @@
     }
   }
 
-  .pg-curveChart{
+  .pg-curveChart {
     width: 100%;
     height: 300px;
     margin-top: 20px;
+  }
+
+  .pg-history{
+    padding: 10px;
+    color: #fff;
+    .pg-history-title{
+      span{
+        font-size: 12px;
+      }
+    }
+    .pg-history-table{
+      table{
+        border-collapse:collapse;
+        text-align: center;
+        width: 100%;
+        th,td{
+          border-bottom: solid 1px #797979;
+          height:35px;
+          vertical-align:middle;
+          font-size: 14px;
+          width: 25%;
+          i{
+            color: red;
+          }
+        }
+        th{
+          color: #797979;
+        }
+      }
+    }
   }
 </style>

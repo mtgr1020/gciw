@@ -18,13 +18,16 @@ button{
 
 html {
   font-size: 16px;
+  height: 100%;
 }
 
 body {
+  height: 100%;
   color: #797979 !important;
-  background-color: #021326 !important;
   font-family: 'Open Sans', sans-serif;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
 }
+
+
 
