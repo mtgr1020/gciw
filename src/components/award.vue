@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <!--<button @click="addEnter">TEST ENTER</button>-->
+    <!--<button @click="show88Luck">TEST ENTER</button>-->
     <!--<button @click="addLuck">TEST LUCK</button>-->
     <div ref="enterEl">
       <div class="enter">
@@ -19,6 +19,7 @@
       <div class="exhibition">
         <h1>幸运抽奖</h1>
         <h2>尾号为88的观众将获得幸运大奖</h2>
+        <p>(每日尾号为88的观众只可领取首次中奖奖品)</p>
       </div>
     </div>
 
@@ -55,6 +56,9 @@
 </template>
 
 <script>
+
+  import {Howl, Howler} from 'howler';
+
   export default {
     data() {
       return {
@@ -104,6 +108,12 @@
         this.initSocket();
         this.luckAmEnd();
       });
+      this.sound = new Howl({
+        src: ['static/misc/Aurora.mp3'],
+        volume: 0.5,
+        rate: 1
+      });
+
       let _this = this;
       window.addEventListener('unload', function () {
         _this.destory();
@@ -124,7 +134,7 @@
        * 初始化 websocket连接
        */
       initSocket() {
-        this.socket = new WebSocket('ws://10.110.131.251:9003/'); //History_booth_heat
+        this.socket = new WebSocket('ws://10.110.131.249:9003/'); //History_booth_heat
         this.socket.onmessage = this.onMessage;
         this.socket.onclose = this.onClose;
         this.socket.onopen = this.onOpen;
@@ -169,6 +179,8 @@
       },
       onClose() {
         console.log('socket is closed');
+        let _this = this;
+        setTimeout(_this.initSocket,3000);
       },
       computeLuckAud: function () {
         if (this.totalLuckAudience.length > 9) {
@@ -294,6 +306,7 @@
       },
       //中奖显示时长在此处调整
       show88Luck: function () {
+        this.sound.play();
         this.$refs.enterEl.style.display = 'none';
         this.$refs.selectEl.style.display = 'block';
         let listEl = this.$refs.headImg;
@@ -653,6 +666,14 @@
         font-size: 44px;
         color: #FFFFFF;
         font-weight: 300;
+      }
+      p{
+        font-family: PingFangSC-Regular;
+        font-size: 22px;
+        line-height: 25px;
+        color: #ddd;
+        font-weight: 600;
+        letter-spacing: 3px;
       }
     }
     .enter {

@@ -5,7 +5,7 @@
   "author": "mtgr1020 <18514591362@163.com>",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
+    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js --host 192.168.99.237",
     "start": "npm run dev",
     "unit": "jest --config test/unit/jest.conf.js --coverage",
     "e2e": "node test/e2e/runner.js",
@@ -15,6 +15,7 @@
   "dependencies": {
     "flickity": "^2.1.2",
     "heatmap.js": "^2.0.5",
+    "howler": "^2.0.15",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
   },

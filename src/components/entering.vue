@@ -76,7 +76,7 @@
        * 初始化 websocket连接
        */
       initSocket() {
-        this.socket = new WebSocket('ws://10.110.131.251:9006/'); //History_booth_heat
+        this.socket = new WebSocket('ws://10.110.131.249:9006/'); //History_booth_heat
         this.socket.onmessage = this.onMessage;
         this.socket.onclose = this.onClose;
         this.socket.onopen = this.onOpen;

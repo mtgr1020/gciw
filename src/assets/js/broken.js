@@ -202,7 +202,7 @@
       }
 
       //这个为了找出0的 默认不是最后一点 其实这个会有个bug 就是真为0的时候就比较扯了 那也就是我现在做的不能跳日期
-      for (let i = countPoint.length; i > 0; i--) {
+      for (let i = 4; i > -1; i--) {
         if (countPoint[i] > 0) {
           this.curPoint(countPoint[i], (i + 1) * space - excursion, 2 * mid - Math.floor(countPoint[i] * ratio));
           break;

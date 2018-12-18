@@ -157,9 +157,12 @@
             {name: 'Cool Gaming Experience', x: 0.725, y: 0.907},
           ],
           cn: [
-            {name: 'Workstation', x: 0.087, y: 0.43},
-            {name: 'Mobile ThinkPad', x: 0.234, y: 0.43},
-            {name: 'Smart Office', x: 0.437, y: 0.43},
+            // {name: 'Workstation', x: 0.087, y: 0.43},
+            // {name: 'Mobile ThinkPad', x: 0.234, y: 0.43},
+            // {name: 'Smart Office', x: 0.437, y: 0.43},
+            {name: 'Smart Office', x: 0.077, y: 0.43},
+            {name: 'Workstation', x: 0.264, y: 0.43},
+            {name: 'Mobile ThinkPad', x: 0.407, y: 0.43},
             {name: 'Smart PC', x: 0.562, y: 0.43},
             {name: 'Commercial IOT', x: 0.674, y: 0.43},
             {name: 'School', x: 0.835, y: 0.43},
@@ -171,9 +174,12 @@
         },
         areaCtx: undefined,
         fireObject: {
-          workstation: {x: 0.172, y: 0.412, rx: 0.087, ry: 0.25, q: 'upperHalf', f: 0.1},//x x坐标，rx 热力绘制x坐标，q 上下区，f 随机热力浮动范围
-          mobilethinkpad: {x: 0.351, y: 0.412, rx: 0.224, ry: 0.25, q: 'upperHalf', f: 0.14},
-          smartoffice: {x: 0.522, y: 0.412, rx: 0.397, ry: 0.25, q: 'upperHalf', f: 0.13},
+          // workstation: {x: 0.172, y: 0.412, rx: 0.087, ry: 0.25, q: 'upperHalf', f: 0.1},//x x坐标，rx 热力绘制x坐标，q 上下区，f 随机热力浮动范围
+          // mobilethinkpad: {x: 0.351, y: 0.412, rx: 0.224, ry: 0.25, q: 'upperHalf', f: 0.14},
+          // smartoffice: {x: 0.522, y: 0.412, rx: 0.397, ry: 0.25, q: 'upperHalf', f: 0.13},
+          smartoffice: {x: 0.172, y: 0.412, rx: 0.087, ry: 0.25, q: 'upperHalf', f: 0.1},//x x坐标，rx 热力绘制x坐标，q 上下区，f 随机热力浮动范围
+          workstation: {x: 0.351, y: 0.412, rx: 0.224, ry: 0.25, q: 'upperHalf', f: 0.14},
+          mobilethinkpad: {x: 0.532, y: 0.412, rx: 0.397, ry: 0.25, q: 'upperHalf', f: 0.13},
           smartpc: {x: 0.625, y: 0.412, rx: 0.562, ry: 0.25, q: 'upperHalf', f: 0.06},
           commercialiot: {x: 0.786, y: 0.412, rx: 0.654, ry: 0.25, q: 'upperHalf', f: 0.14},
           school: {x: 0.882, y: 0.412, rx: 0.815, ry: 0.25, q: 'upperHalf', f: 0.07},
@@ -303,7 +309,7 @@
       },
 
       updateMap: function (data) {
-        data = data || [{name: 'mobilethinkpad', number: 100, coordinates: "[[0.5625, 0.10638297872340426]]"}];
+        // data = data || [{name: 'mobilethinkpad', number: 100, coordinates: "[[0.5625, 0.10638297872340426]]"}];
         if (data.length === 0) {
           return false
         }
@@ -322,7 +328,8 @@
           // let coordinates = eval('(' +data[i].coordinates + ')');
           let coordinates = JSON.parse(data[i].coordinates);
           for (let l = 0; l < coordinates.length; l++) {
-            let x = Math.floor((dar.rx + dar.f * coordinates[l][0]) * this.fireObject.w);
+            // let x = Math.floor((dar.rx + dar.f * coordinates[l][0]) * this.fireObject.w);
+            let x = Math.floor((dar.rx + dar.f * (dar.q==='bottomHalf'?(1 - coordinates[l][0]):coordinates[l][0])) * this.fireObject.w);
             let y = Math.floor((dar.ry + yfloat * (dar.q==='upperHalf'?(1 - coordinates[l][1]):coordinates[l][1])) * this.fireObject.h);
             let point = {
               x: x,
@@ -364,11 +371,11 @@
        * 初始化 websocket连接
        */
       initSocket() {
-        this.socket = new WebSocket('ws://10.110.131.251:9003/'); //History_booth_heat
+        this.socket = new WebSocket('ws://10.110.131.249:9003/'); //History_booth_heat
         this.socket.onmessage = this.onMessage;
         this.socket.onclose = this.onClose;
         this.socket.onopen = this.onOpen;
-        this.socket2 = new WebSocket('ws://10.110.131.251:9006/'); //History_booth_heat
+        this.socket2 = new WebSocket('ws://10.110.131.249:9006/'); //History_booth_heat
         this.socket2.onmessage = this.onMessage2;
       },
       onMessage2(ev) {
@@ -388,7 +395,7 @@
         switch (key) {
           case 'Thumb_up_today':
             _this.bestproduct = response['Thumb_up_today'];
-            _this.$nextTick(_this.checkScroll());
+            _this.$nextTick(_this.checkScroll);
             break;
           case 'Daily_numbers':
             _this.nextGuestNum = response['Daily_numbers'];
@@ -433,6 +440,8 @@
       },
       onClose() {
         console.log('socket is closed');
+        let _this = this;
+        setTimeout(_this.initSocket,3000);
       }
     },
     components: {
